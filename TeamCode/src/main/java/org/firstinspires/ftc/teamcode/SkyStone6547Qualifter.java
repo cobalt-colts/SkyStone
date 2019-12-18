@@ -97,7 +97,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
     ExpansionHubEx expansionHub2;
     ExpansionHubEx expansionHub3;
 
-    OpMode opMode;
+    public OpMode opMode;
 
 
     public SkyStone6547Qualifter(OpMode _opMode) {
@@ -107,6 +107,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
     public void INIT(OpMode _opMode)
     {
         this.opMode = _opMode;
+        hardwareMap = opMode.hardwareMap;
         expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
         expansionHub3 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 3");
         LeftBack= (ExpansionHubMotor) hardwareMap.get(DcMotor.class, "leftBack");  //set Motors
