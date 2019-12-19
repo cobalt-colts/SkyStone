@@ -16,7 +16,7 @@ public class testCompletableFuture extends LinearOpMode {
     SkyStone6547Qualifter bot;
 
     @Override
-    public void runOpMode() throws InterruptedException, ExecutionException {
+    public void runOpMode() throws InterruptedException {
 
         bot = new SkyStone6547Qualifter(this);
 
