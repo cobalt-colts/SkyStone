@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.SkyStone6547Qualifter;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by Drew from 11874 on 12/19/2019.
@@ -15,7 +16,7 @@ public class testCompletableFuture extends LinearOpMode {
     SkyStone6547Qualifter bot;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() throws InterruptedException, ExecutionException {
 
         bot = new SkyStone6547Qualifter(this);
 
