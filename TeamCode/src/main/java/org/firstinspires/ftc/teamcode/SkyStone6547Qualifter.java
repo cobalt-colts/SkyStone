@@ -774,6 +774,16 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         LeftBack.setTargetPosition(pos);
         RightBack.setTargetPosition(pos);
     }
+    public void runMotor(DcMotor motor, double pow, int target)
+    {
+        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //zero encoder
+        motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        while (opModeIsActive() && Math.abs(motor.getCurrentPosition()) < Math.abs(target))
+        {
+            motor.setPower(pow);
+        }
+        motor.setPower(0);
+    }
     public void steerRobot(double leftPow, double rightPow)
     {
         LeftFront.setPower(leftPow);
