@@ -47,12 +47,18 @@ public class newStateMachie {
     }
     public void moveMotor(DcMotor motor, double power, int target, int index)
     {
-        if (motor.getCurrentPosition() > Math.abs(target))
+        if (index > maxIndex) maxIndex = index;
+        motor.setPower(power);
+        if (Math.abs(motor.getCurrentPosition()) > Math.abs(target))
         {
+            setDone(index, false);
+            bot.outputTelemetry();
+        }
+        else
+        {
+            motor.setPower(0);
             setDone(index, true);
-            if (index > maxIndex) maxIndex = index;
-            motor.setPower(power);
-            bot.opMode.telemetry.addData("motor pos", motor.getCurrentPosition());
+
         }
     }
     public void setDone(int index, boolean bool)
@@ -86,6 +92,7 @@ public class newStateMachie {
                     doneIsh.add(false);
                 }
                 if (allDone()) {
+                    bot.zeroEncoders();
                     resetDone();
                     state++;
                 }

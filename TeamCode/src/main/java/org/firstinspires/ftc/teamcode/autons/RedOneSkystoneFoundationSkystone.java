@@ -86,11 +86,11 @@ public class RedOneSkystoneFoundationSkystone extends SkyStone6547Meet2 {
         
         sleep(.2);
 
-        setLiftLevel(1); //lift up slide
-        releaseGrabbers(); //release block
+        //setLiftLevel(1); //lift up slide
+        //releaseGrabbers(); //release block
         sleep(.25);
-        grabBlock();
-        setLiftLevel(0); //put slide back down
+        //grabBlock();
+        //setLiftLevel(0); //put slide back down
         
         DriveFieldRealtiveDistance(.5,270,3.5); //pull foundation
         sleep(.2);

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
@@ -30,6 +32,7 @@ import org.openftc.revextensions2.RevBulkData;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import edu.spa.ftclib.internal.state.Button;
 /*
@@ -99,6 +102,12 @@ public class SkyStone6547Qualifter extends LinearOpMode{
 
     public OpMode opMode;
 
+    double lastPosX;
+    double lastPosY;
+
+    Rev2mDistanceSensor distanceSensorX;
+    Rev2mDistanceSensor distanceSensorY;
+
 
     public SkyStone6547Qualifter(OpMode _opMode) {
         INIT(_opMode);
@@ -108,6 +117,8 @@ public class SkyStone6547Qualifter extends LinearOpMode{
     {
         this.opMode = _opMode;
         hardwareMap = opMode.hardwareMap;
+        distanceSensorX = hardwareMap.get(Rev2mDistanceSensor.class, "d boi");
+        distanceSensorY = hardwareMap.get(Rev2mDistanceSensor.class, "d boi1");
         expansionHub2 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 2");
         expansionHub3 = hardwareMap.get(ExpansionHubEx.class, "Expansion Hub 3");
         LeftBack= (ExpansionHubMotor) hardwareMap.get(DcMotor.class, "leftBack");  //set Motors
@@ -353,7 +364,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
             opMode.telemetry.log().add("target: " + target);
             power=Math.abs(power);
             lift.setPower(power);
-            while (opModeIsActive() && lift.getCurrentPosition() < target)
+            while (((LinearOpMode) opMode).opModeIsActive() && lift.getCurrentPosition() < target)
             {
                 opMode.telemetry.addData("Status","Moving Up");
                 opMode.telemetry.addData("lift power", lift.getPower());
@@ -423,7 +434,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         miniPID.setSetpoint(target);
         opMode.telemetry.log().add("PID target angle: " + target + "degrees");
         runtime.reset();
-        while (opModeIsActive() && runtime.seconds() < seconds) {
+        while (((LinearOpMode) opMode).opModeIsActive() && runtime.seconds() < seconds) {
 
             output = miniPID.getOutput(actual, target);
             //if (angle>175 || angle <-175) actual = getIMUAngle(true);
@@ -471,14 +482,14 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         double inches = feet*12;
         double encodersPerInch = encoderTicksPerRotation/circumferenceOfWheel;
         double drivingDistanceInEncoderTicks = encodersPerInch*inches;
-        if (drivingDistanceInEncoderTicks>=0) while (RightBack.getCurrentPosition() <=drivingDistanceInEncoderTicks && opModeIsActive())
+        if (drivingDistanceInEncoderTicks>=0) while (RightBack.getCurrentPosition() <=drivingDistanceInEncoderTicks && ((LinearOpMode) opMode).opModeIsActive())
         {
             opMode.telemetry.addData("Status","Driving For Length");
             opMode.telemetry.addData("Encoder ticks to drive (positve)", drivingDistanceInEncoderTicks);
             opMode.telemetry.addData("IMU angle", getIMUAngle());
             outputTelemetry();
         }
-        else while (RightBack.getCurrentPosition() >=drivingDistanceInEncoderTicks && opModeIsActive())
+        else while (RightBack.getCurrentPosition() >=drivingDistanceInEncoderTicks && ((LinearOpMode) opMode).opModeIsActive())
         {
             opMode.telemetry.addData("Status","Driving For Length");
             opMode.telemetry.addData("Encoder ticks to drive (negitive)", drivingDistanceInEncoderTicks);
@@ -532,7 +543,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         double desiredAngle =Math.toRadians(drivingAngle)-Math.PI / 4;
         //double robotAngle = Math.toRadians(getIMUAngle());
         opMode.telemetry.log().add("average encoder" + averageDrivetrainEncoder());
-        while (opModeIsActive() && Math.abs(averageDrivetrainEncoder())<Math.abs(drivingDistanceInEncoderTicks))
+        while (((LinearOpMode) opMode).opModeIsActive() && Math.abs(averageDrivetrainEncoder())<Math.abs(drivingDistanceInEncoderTicks))
         {
             rightX = miniPID.getOutput(getIMUAngle());
             double robotAngle = Math.toRadians(getIMUAngle());
@@ -549,6 +560,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
     }
     public void DriveFieldRealtiveDistance(double power, double angleInDegrees, double feet, boolean brake)
     {
+        power/=2;
         angleInDegrees+=180;
         zeroEncoders();
         double inches = feet*12;
@@ -559,7 +571,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         //double robotAngle = Math.toRadians(getIMUAngle());
         double rightX = 0;
         opMode.telemetry.log().add("averge encoder" + averageDrivetrainEncoder());
-        while (opModeIsActive() && Math.abs(averageDrivetrainEncoder())<Math.abs(drivingDistanceInEncoderTicks))
+        while (((LinearOpMode) opMode).opModeIsActive() && Math.abs(averageDrivetrainEncoder())<Math.abs(drivingDistanceInEncoderTicks))
         {
             double robotAngle = Math.toRadians(getIMUAngle());
             LeftFront.setPower(speed * Math.cos(desiredAngle-robotAngle) + rightX);
@@ -625,7 +637,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         }
         leftPow*=pow;
         rightPow*=pow;
-        while (opModeIsActive() && averageDrivetrainEncoder() <= midDist)
+        while (((LinearOpMode) opMode).opModeIsActive() && averageDrivetrainEncoder() <= midDist)
         {
             steerRobot(leftPow, rightPow);
         }
@@ -649,7 +661,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         double rightPow = rightDist/leftDist;
         leftPow*=pow; //left pow is a constant.
         resetDetlaPos();
-        while (opModeIsActive() && averageDrivetrainEncoder() <= midDist)
+        while (((LinearOpMode) opMode).opModeIsActive() && averageDrivetrainEncoder() <= midDist)
         {
             updateDistance();
             double r = getCircleRaduis(getEllipseCurvature(deltaX));
@@ -749,7 +761,7 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         setTargetPos(pos);
         zeroEncoders();
         driveForward(power);
-        while (opModeIsActive() && motorsRunning())
+        while (((LinearOpMode) opMode).opModeIsActive() && motorsRunning())
         {
             stopEachMotorWhenHitPos();
             outputTelemetry();
@@ -774,11 +786,12 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         LeftBack.setTargetPosition(pos);
         RightBack.setTargetPosition(pos);
     }
-    public void runMotor(DcMotor motor, double pow, int target)
+    public void runMotor(DcMotor motor, double pow, int target) throws InterruptedException, ExecutionException
     {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //zero encoder
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        while (opModeIsActive() && Math.abs(motor.getCurrentPosition()) < Math.abs(target))
+        sleep(.4);
+        while (((LinearOpMode) opMode).opModeIsActive() && Math.abs(motor.getCurrentPosition()) < Math.abs(target))
         {
             motor.setPower(pow);
         }
@@ -956,6 +969,162 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         {
             driveTrainExpanstionHubNumbers[i]=getExpansionHub(driveTrainMotors[i]);
         }
+    }
+
+    public void DriveToPointPID(double x, double y, double seconds) { DriveToPointPID(x,y,seconds,-90);}
+    public void DriveToPointPID(double x, double y, double seconds,double offset)
+    {
+        opMode.telemetry.log().add("Driving PID");
+        MiniPID miniPID = new MiniPID(.055, 0.000, 0.04);
+        miniPID.setSetpoint(0);
+        miniPID.setSetpoint(x);
+        miniPID.setOutputLimits(1);
+
+        miniPID.setSetpointRange(40);
+
+        double actualX=0;
+        double outputX=0;
+
+        MiniPID miniPIDY = new MiniPID(.10, 0.00, 0.05);
+        miniPIDY.setSetpoint(0);
+        miniPIDY.setSetpoint(y);
+        miniPIDY.setOutputLimits(1);
+
+        miniPIDY.setSetpointRange(40);
+
+        double actualY=0;
+        double outputY=0;
+
+        runtime.reset();
+        while (((LinearOpMode) opMode).opModeIsActive() && runtime.seconds()<seconds) {
+            actualX = getRobotPositionX();
+            outputX = miniPID.getOutput(actualX, x);
+            actualY = getRobotPositionY();
+            outputY = miniPIDY.getOutput(actualY, y);
+            double power = Math.hypot(outputX, outputY)/2;
+            //if (power>.8) power = .8; //set max power as .8
+            double slope = getSlope(x, y, actualX, actualY);
+            double angle = Math.toDegrees(Math.atan2(outputX, -outputY)) + offset;
+            DriveFieldRealtiveSimple(power, angle);
+            if (Math.abs(getIMUAngle())>=5)
+            {
+                TurnPID(0,.5);
+                seconds++;
+            }
+            opMode.telemetry.addData("X pos" , actualX);
+            opMode.telemetry.addData("y pos" , actualY);
+            opMode.telemetry.update();
+        }
+        stopRobot();
+    }
+    void strafeToDistanceXPID(double inch, double time) {strafeToDistanceXPID(inch,time,0);}
+    void strafeToDistanceXPID(double inch, double time, double offset)
+    {
+        MiniPID miniPID = new MiniPID(.055, 0.000, 0.04);
+        double target = inch;
+        miniPID.setSetpoint(0);
+        miniPID.setSetpoint(target);
+        miniPID.setOutputLimits(1);
+
+        miniPID.setSetpointRange(40);
+
+        double actual=0;
+        double output=0;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds()<time) {
+
+            actual = getRobotPositionX();
+            output = miniPID.getOutput(actual, target);
+            DriveFieldRealtiveSimple(output, (output>=0) ? 90+offset : 270+offset);
+            telemetry.addData("Output", output);
+            telemetry.addData("Pos X", getRobotPositionX());
+            telemetry.update();
+        }
+
+    }
+    /*
+    void strafeToDistanceYPID(double inch, double gap)
+    {
+        MiniPID miniPID = new MiniPID(.10, 0.00, 0.05);
+        double target = inch;
+        miniPID.setSetpoint(0);
+        miniPID.setSetpoint(target);
+        miniPID.setOutputLimits(1);
+        miniPID.setSetpointRange(40);
+        double actual=0;
+        double output=0;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds()<gap) {
+            actual = getRobotPositionY();
+            output = miniPID.getOutput(actual, target);
+            DriveFieldRealtiveSimple(output, (output>=0) ? 180 : 0);
+            telemetry.addData("Output", output);
+            telemetry.addData("Pos Y", getRobotPositionY());
+            telemetry.update();
+        }
+        stopRobot();
+    }
+    */
+    void strafeToDistanceYPID(double inch, double gap) { strafeToDistanceYPID(inch,gap,0);}
+    void strafeToDistanceYPID(double inch, double gap, double offset)
+    {
+        MiniPID miniPID = new MiniPID(.10, 0.00, 0.05);
+        double target = inch;
+        miniPID.setSetpoint(0);
+        miniPID.setSetpoint(target);
+        miniPID.setOutputLimits(1);
+
+        miniPID.setSetpointRange(40);
+
+        double actual=0;
+        double output=0;
+        runtime.reset();
+        while (opModeIsActive() && runtime.seconds()<gap) {
+
+            actual = getRobotPositionY();
+            output = miniPID.getOutput(actual, target);
+            DriveFieldRealtiveSimple(output, (output>=0) ? 180+offset : 0+offset);
+            telemetry.addData("Output", output);
+            telemetry.addData("Pos Y", getRobotPositionY());
+            telemetry.update();
+        }
+        stopRobot();
+    }
+    public double getRobotPositionX()
+    {
+        double distance=(distanceSensorX.getDistance(DistanceUnit.INCH));
+        if (Double.isNaN(distance))
+        {
+            opMode.telemetry.log().add("DISTANCE Y VALUE WAS NaN");
+            return 2.5;
+        }
+        if (distance>144)
+        {
+            opMode.telemetry.log().add("overshot X distance");
+            return lastPosX;
+        }
+        lastPosX=distance;
+        return distance;
+    }
+    public double getRobotPositionY()
+    {
+        double distance=distanceSensorY.getDistance(DistanceUnit.INCH);
+        if (Double.isNaN(distance))
+        {
+            opMode.telemetry.log().add("DISTANCE Y VALUE WAS NaN");
+            return 2.5;
+        }
+        if (distance>144)
+        {
+            opMode.telemetry.log().add("overshot Y distance");
+            return lastPosY;
+        }
+        lastPosY=distance;
+        return distance;
+    }
+    double getSlope(double x1, double y1, double x2, double y2)
+    {
+        return (y1-y2)/(x1-x2);
     }
 
     public void runOpMode() throws InterruptedException {} //only here to not crash the entire program
