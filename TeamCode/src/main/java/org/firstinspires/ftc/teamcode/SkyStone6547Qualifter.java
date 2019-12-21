@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.ftccommon.SoundPlayer;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
@@ -31,6 +32,8 @@ import org.openftc.revextensions2.ExpansionHubServo;
 import org.openftc.revextensions2.RevBulkData;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
@@ -108,6 +111,9 @@ public class SkyStone6547Qualifter extends LinearOpMode{
     Rev2mDistanceSensor distanceSensorX;
     Rev2mDistanceSensor distanceSensorY;
 
+    List<Integer> screamIds = new ArrayList<>();
+
+    ElapsedTime screamTime = new ElapsedTime();
 
     public SkyStone6547Qualifter(OpMode _opMode) {
         INIT(_opMode);
@@ -168,6 +174,11 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         opMode.telemetry.log().add("Assigned expansion numbers");
 
         holdFromFrontGrabber();
+
+        for (int i =0; i < 6; i++) //init screams
+        {
+            screamIds.add(hardwareMap.appContext.getResources().getIdentifier("Scream" + (i+1),   "raw", hardwareMap.appContext.getPackageName()));
+        }
 
         //opMode.telemetry = dashboard.getopMode.telemetry();
     }
@@ -830,6 +841,15 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         LeftBack.setPower(0);
         RightBack.setPower(0);
     }
+    public void scream()
+    {
+        if (screamTime.seconds() >= 2)
+        {
+            int soundToPlay = (int) (Math.random() * screamIds.size());
+            SoundPlayer.getInstance().startPlaying(hardwareMap.appContext, screamIds.get(soundToPlay));
+            screamTime.reset();
+        }
+    }
     public void initIMU() //code to init the IMU, this method is from Sample code that came with the FTC SDK
     {
         // Set up the parameters with which we will use our IMU. Note that integration
@@ -1017,8 +1037,8 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         }
         stopRobot();
     }
-    void strafeToDistanceXPID(double inch, double time) {strafeToDistanceXPID(inch,time,0);}
-    void strafeToDistanceXPID(double inch, double time, double offset)
+    public void strafeToDistanceXPID(double inch, double time) {strafeToDistanceXPID(inch,time,0);}
+    public void strafeToDistanceXPID(double inch, double time, double offset)
     {
         MiniPID miniPID = new MiniPID(.055, 0.000, 0.04);
         double target = inch;
@@ -1065,8 +1085,8 @@ public class SkyStone6547Qualifter extends LinearOpMode{
         stopRobot();
     }
     */
-    void strafeToDistanceYPID(double inch, double gap) { strafeToDistanceYPID(inch,gap,0);}
-    void strafeToDistanceYPID(double inch, double gap, double offset)
+    public void strafeToDistanceYPID(double inch, double gap) { strafeToDistanceYPID(inch,gap,0);}
+    public void strafeToDistanceYPID(double inch, double gap, double offset)
     {
         MiniPID miniPID = new MiniPID(.10, 0.00, 0.05);
         double target = inch;
